@@ -10079,7 +10079,7 @@ function mergeRefs(...refs) {
 var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
 try {
   if (isBrowser) {
-    window.__reactRouterVersion = "7.6.1";
+    window.__reactRouterVersion = "7.6.2";
   }
 } catch (e2) {
 }
@@ -10543,7 +10543,7 @@ function PageLayout({ children }) {
     }
   );
 }
-const confirmLayout = css`
+css`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -10551,20 +10551,20 @@ const confirmLayout = css`
   justify-content: center;
   gap: 24px;
 `;
-const totalPriceBox = css`
+css`
   display: flex;
   flex-direction: column;
   gap: 12px;
 `;
-const titleText = css`
+css`
   font-weight: 700;
   font-size: 24px;
 `;
-const subtitleText = css`
+css`
   font-weight: 700;
   font-size: 16px;
 `;
-const bodyText = css`
+css`
   font-weight: 500;
   font-size: 12px;
 `;
@@ -10577,6 +10577,50 @@ const backButton = css`
 const backImg = css`
   width: 21px;
   height: 21px;
+`;
+const titleStyle$1 = css`
+  font-weight: 700;
+  font-size: 24px;
+`;
+const subTitleStyle$1 = css`
+  font-weight: 500;
+  font-size: 12px;
+`;
+const titleBox$1 = css`
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+`;
+const subTitleBox = css`
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+`;
+const applyButton = css`
+  width: 100%;
+  height: 48px;
+  background-color: white;
+  border: 1px solid #33333340;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+  color: #333333bf;
+  cursor: pointer;
+`;
+const checkBoxWrapper$1 = css`
+  display: flex;
+  align-items: center;
+  gap: 4.5px;
+  margin-top: 16px;
+`;
+const deliveryText = css`
+  font-weight: 700;
+  font-size: 16px;
+`;
+const labelText$1 = css`
+  font-weight: 500;
+  font-size: 12px;
 `;
 const buttonLayout = (backgroundColor, color, border = "none", size = "sm", disabled) => {
   const sizeVarient = {
@@ -10654,58 +10698,51 @@ function Button({
     }
   );
 }
-function OrderConfirm() {
-  const { state } = useLocation();
-  const navigate = useNavigate();
-  const handleBackClick = () => {
-    navigate("/");
-  };
-  return /* @__PURE__ */ jsxs(PageLayout, { children: [
-    /* @__PURE__ */ jsx$1(Header, { children: /* @__PURE__ */ jsx$1("button", { css: backButton, onClick: handleBackClick, children: /* @__PURE__ */ jsx$1("img", { css: backImg, src: "./back.png" }) }) }),
-    /* @__PURE__ */ jsx$1(Main, { children: /* @__PURE__ */ jsx$1("div", { css: confirmLayout, children: state ? /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx$1("p", { css: titleText, children: "주문확인" }),
-      /* @__PURE__ */ jsxs("p", { css: bodyText, children: [
-        "총 ",
-        state.selectedItemGroupCount,
-        "종류의 상품",
-        " ",
-        state.selectedCartItem,
-        "개를 주문합니다. 최종 결제 금액을 확인해 주세요."
-      ] }),
-      /* @__PURE__ */ jsxs("div", { css: totalPriceBox, children: [
-        /* @__PURE__ */ jsx$1("p", { css: subtitleText, children: "총 결제금액" }),
-        /* @__PURE__ */ jsxs("p", { css: titleText, children: [
-          Number(state.totalPrice).toLocaleString("ko"),
-          "원"
-        ] })
-      ] })
-    ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx$1("p", { children: "잘못된 접근입니다." }),
-      /* @__PURE__ */ jsx$1(
-        Button,
-        {
-          onClick: handleBackClick,
-          customCss: css`
-                  padding: 10px;
-                `,
-          children: "장바구니 페이지로 돌아가기"
-        }
-      )
-    ] }) }) })
-  ] });
-}
-async function deleteShoppingCart(productId) {
-  const token2 = "a2lteW91MTEwMjpwYXNzd29yZA==";
-  const baseUrl = "http://techcourse-lv2-alb-974870821.ap-northeast-2.elb.amazonaws.com";
-  const response = await fetch(`${baseUrl}/cart-items/${productId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Basic ${token2}`
-    }
-  });
-  if (!response.ok) {
-    throw new Error("에러 발생");
+const isQuotaExceededError = (err) => {
+  if (!(err instanceof DOMException)) {
+    return false;
   }
+  const code = err.code;
+  return code === 22 || code === 1014 || err.name === "QuotaExceededError" || err.name === "NS_ERROR_DOM_QUOTA_REACHED";
+};
+const setItem = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    if (err instanceof TypeError) {
+      alert("저장할 수 없는 형식입니다.");
+    } else if (isQuotaExceededError(err)) {
+      alert("현재 사용 가능한 스토리지 공간이 부족합니다.");
+    } else {
+      alert("예기치 못한 오류가 발생했습니다.");
+    }
+  }
+};
+function getItem(key, defaultValue) {
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue === null) return defaultValue;
+    return JSON.parse(storedValue);
+  } catch (e2) {
+    return defaultValue;
+  }
+}
+const SELECTED_CART_ITEM_IDS = "selectedCartItemIds";
+const footerLayout = css`
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+`;
+function Footer({ children }) {
+  return /* @__PURE__ */ jsx$1("footer", { css: footerLayout, children });
+}
+const LineLayout = css`
+  width: 100%;
+  height: 1px;
+  background-color: #0000001a;
+`;
+function Line() {
+  return /* @__PURE__ */ jsx$1("div", { css: LineLayout });
 }
 async function patchShoppingCart(productId, quantity) {
   const token2 = "a2lteW91MTEwMjpwYXNzd29yZA==";
@@ -10840,7 +10877,7 @@ const ProductImg = (imageUrl) => {
     width: 112px;
     border-radius: 8px;
     background-image: ${`url(${imageUrl})`},
-      url("https:lh3.googleusercontent.com/proxy/3Fqjhno28S6v1khXPS44ukHF-8y2Kue7oKfnyqCR4_vX7ze7O20WFu7CzZTq_KQaLwDrpMUNFhUD345MdmKB9ZzzejPJCfHmRAf2rMIzQhkFy9n9kMPPAf4hi7wIZm0cmjLSnTkiaj3g9mAA");
+      url('https:lh3.googleusercontent.com/proxy/3Fqjhno28S6v1khXPS44ukHF-8y2Kue7oKfnyqCR4_vX7ze7O20WFu7CzZTq_KQaLwDrpMUNFhUD345MdmKB9ZzzejPJCfHmRAf2rMIzQhkFy9n9kMPPAf4hi7wIZm0cmjLSnTkiaj3g9mAA');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -10864,6 +10901,11 @@ css`
   display: flex;
   height: fit-content;
 `;
+const quantityText = css`
+  margin-top: 28px;
+  font-weight: 500;
+  font-size: 12px;
+`;
 function CartProduct({
   id: id2,
   imageUrl,
@@ -10871,7 +10913,8 @@ function CartProduct({
   price,
   quantity,
   onChange,
-  isFetching
+  isFetching,
+  mode
 }) {
   return /* @__PURE__ */ jsxs(
     "div",
@@ -10888,7 +10931,7 @@ function CartProduct({
             price.toLocaleString(),
             "원"
           ] }),
-          /* @__PURE__ */ jsx$1(
+          mode === "control" ? /* @__PURE__ */ jsx$1(
             QuantitySelector,
             {
               quantity,
@@ -10896,11 +10939,52 @@ function CartProduct({
               onChange,
               isFetching
             }
-          )
+          ) : /* @__PURE__ */ jsxs("p", { css: quantityText, children: [
+            quantity,
+            "개"
+          ] })
         ] })
       ]
     }
   );
+}
+const CartProductContainerLayout$1 = css`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+`;
+const CartProductList$1 = css`
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  overflow: auto;
+  gap: 24px;
+`;
+const CartItemBox$1 = css`
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+`;
+function SelectedCartProductContainer({
+  cartItems
+}) {
+  return /* @__PURE__ */ jsx$1(Fragment, { children: /* @__PURE__ */ jsx$1("div", { css: CartProductContainerLayout$1, children: /* @__PURE__ */ jsx$1("section", { css: CartProductList$1, children: cartItems.map((item) => {
+    return /* @__PURE__ */ jsxs("div", { css: CartItemBox$1, children: [
+      /* @__PURE__ */ jsx$1(Line, {}),
+      /* @__PURE__ */ jsx$1(
+        CartProduct,
+        {
+          id: item.id,
+          imageUrl: item.product.imageUrl,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          mode: "info"
+        }
+      )
+    ] }, item.id);
+  }) }) }) });
 }
 const CheckBoxLayout = css`
   position: relative;
@@ -10925,153 +11009,20 @@ function CheckBox({
   isChecked = false,
   id: id2,
   onChange,
-  dataTestId
+  dataTestId,
+  customCss
 }) {
   return /* @__PURE__ */ jsx$1(
     "input",
     {
       type: "checkbox",
-      css: CheckBoxLayout,
+      css: [CheckBoxLayout, customCss],
       id: id2,
       checked: isChecked,
       onChange: () => onChange(id2),
       "data-testid": dataTestId
     }
   );
-}
-const LineLayout = css`
-  width: 100%;
-  height: 1px;
-  background-color: #0000001a;
-`;
-function Line() {
-  return /* @__PURE__ */ jsx$1("div", { css: LineLayout });
-}
-const CartProductContainerLayout = css`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  overflow-y: auto;
-`;
-const CartProductList = css`
-  display: flex;
-  flex-direction: column;
-  height: 400px;
-  overflow: auto;
-  gap: 24px;
-`;
-const SelectAllLayout = css`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-const CartItemBox = css`
-  display: flex;
-  gap: 12px;
-  flex-direction: column;
-`;
-const CartItemHeader = css`
-  display: flex;
-  justify-content: space-between;
-`;
-css`
-  display: flex;
-  justify-content: space-between;
-`;
-css`
-  font-weight: 700;
-  font-size: 16px;
-`;
-css`
-  font-weight: 700;
-  font-size: 24px;
-`;
-function CartProductContainer({
-  cartItems,
-  onChange,
-  onError,
-  selectedCartIds,
-  setSelectedCartIds,
-  isFetching
-}) {
-  const handleAllCheckBox = () => {
-    if (selectedCartIds.length === cartItems.length) {
-      setSelectedCartIds([]);
-    } else {
-      setSelectedCartIds(cartItems.map((item) => item.id.toString()));
-    }
-  };
-  const handleCheckBox = (id2) => {
-    if (selectedCartIds.includes(id2)) {
-      setSelectedCartIds(selectedCartIds.filter((itemId) => itemId !== id2));
-    } else {
-      setSelectedCartIds([...selectedCartIds, id2]);
-    }
-  };
-  const handleDelete = async (id2) => {
-    try {
-      await deleteShoppingCart(id2);
-      onChange();
-    } catch (error) {
-      onError("삭제에 실패했습니다");
-    }
-  };
-  return /* @__PURE__ */ jsx$1(Fragment, { children: /* @__PURE__ */ jsxs("div", { css: CartProductContainerLayout, children: [
-    /* @__PURE__ */ jsxs("div", { css: SelectAllLayout, children: [
-      /* @__PURE__ */ jsx$1(
-        CheckBox,
-        {
-          isChecked: selectedCartIds.length === cartItems.length && cartItems.length !== 0,
-          dataTestId: "select-all",
-          id: "select-all",
-          onChange: handleAllCheckBox
-        }
-      ),
-      /* @__PURE__ */ jsx$1("label", { htmlFor: "select-all", children: "전체 선택" })
-    ] }),
-    /* @__PURE__ */ jsx$1("section", { css: CartProductList, children: cartItems.map((item) => {
-      return /* @__PURE__ */ jsxs("div", { css: CartItemBox, children: [
-        /* @__PURE__ */ jsx$1(Line, {}),
-        /* @__PURE__ */ jsxs("div", { css: CartItemHeader, children: [
-          /* @__PURE__ */ jsx$1(
-            CheckBox,
-            {
-              dataTestId: `select-${item.id}`,
-              isChecked: selectedCartIds.includes(item.id.toString()),
-              onChange: handleCheckBox,
-              id: item.id.toString()
-            }
-          ),
-          /* @__PURE__ */ jsx$1(Button, { onClick: () => handleDelete(item.id), style: "ghost", children: "삭제" })
-        ] }),
-        /* @__PURE__ */ jsx$1(
-          CartProduct,
-          {
-            id: item.id,
-            imageUrl: item.product.imageUrl,
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            onChange,
-            isFetching
-          }
-        )
-      ] }, item.id);
-    }) })
-  ] }) });
-}
-const emptyText = css`
-  font-weight: 400;
-  font-size: 16px;
-`;
-const emptyLayout = css`
-  display: flex;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: center;
-`;
-function EmptyShoppingCart() {
-  return /* @__PURE__ */ jsx$1("div", { css: emptyLayout, children: /* @__PURE__ */ jsx$1("p", { css: emptyText, children: "장바구니에 담은 상품이 없습니다." }) });
 }
 const summaryRowLayout = css`
   display: flex;
@@ -11106,29 +11057,40 @@ const summaryRowBox = css`
   flex-direction: column;
   gap: 12px;
 `;
-const imgLayout = css`
+const imgLayout$1 = css`
   width: 16px;
   height: 16px;
 `;
-const deliveryInfo = css`
+const deliveryInfo$1 = css`
   font-weight: 500;
   font-size: 12px;
 `;
-const deliveryInfoBox = css`
+const deliveryInfoBox$1 = css`
   display: flex;
   align-items: center;
   gap: 4px;
 `;
-function PaymentSummary({ price }) {
-  const deliveryFee = 1e5 <= price ? 0 : 3e3;
+function PaymentSummary({
+  price,
+  couponDiscountAmount,
+  deliveryFee
+}) {
   return /* @__PURE__ */ jsxs("div", { css: paymentSummaryLayout, children: [
-    /* @__PURE__ */ jsxs("div", { css: deliveryInfoBox, children: [
-      /* @__PURE__ */ jsx$1("img", { src: "./info.png", css: imgLayout }),
-      /* @__PURE__ */ jsx$1("p", { css: deliveryInfo, children: "총 주문 금액이 100,000원 이상일 경우 무료 배송됩니다." })
+    /* @__PURE__ */ jsxs("div", { css: deliveryInfoBox$1, children: [
+      /* @__PURE__ */ jsx$1("img", { src: "./info.png", css: imgLayout$1 }),
+      /* @__PURE__ */ jsx$1("p", { css: deliveryInfo$1, children: "총 주문 금액이 100,000원 이상일 경우 무료 배송됩니다." })
     ] }),
     /* @__PURE__ */ jsx$1(Line, {}),
     /* @__PURE__ */ jsxs("div", { css: summaryRowBox, children: [
       /* @__PURE__ */ jsx$1(SummaryRow, { text: "주문 금액", price, dataTestId: "orderPrice" }),
+      couponDiscountAmount !== void 0 ? /* @__PURE__ */ jsx$1(
+        SummaryRow,
+        {
+          text: "쿠폰 할인 금액",
+          price: couponDiscountAmount === 0 ? 0 : couponDiscountAmount * -1,
+          dataTestId: "CouponDiscountAmount"
+        }
+      ) : null,
       /* @__PURE__ */ jsx$1(
         SummaryRow,
         {
@@ -11142,61 +11104,12 @@ function PaymentSummary({ price }) {
         SummaryRow,
         {
           text: "총 결제 금액",
-          price: price + deliveryFee,
+          price: price + deliveryFee - (couponDiscountAmount ?? 0),
           dataTestId: "totalPrice"
         }
       )
     ] })
   ] });
-}
-const ToastLayout = css`
-  position: absolute;
-  bottom: -36px;
-  left: 0;
-  padding: 12px 77px;
-  width: 100%;
-  background-color: #ffc9c9;
-  font-weight: 500;
-  font-size: 12px;
-  text-align: center;
-  color: black;
-  box-sizing: border-box;
-`;
-function Toast({ children }) {
-  const [visible, setVisible] = reactExports.useState(true);
-  reactExports.useEffect(() => {
-    const timer = setTimeout(() => setVisible(false), 1e3);
-    return () => clearTimeout(timer);
-  }, []);
-  if (!visible) return null;
-  return /* @__PURE__ */ jsx$1("div", { css: ToastLayout, children });
-}
-const titleStyle = css`
-  font-weight: 700;
-  font-size: 24px;
-`;
-const subTitleStyle = css`
-  font-weight: 500;
-  font-size: 12px;
-`;
-const titleBox = css`
-  display: flex;
-  gap: 15px;
-  flex-direction: column;
-`;
-const spinnerWrapper = css`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-`;
-const footerLayout = css`
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-`;
-function Footer({ children }) {
-  return /* @__PURE__ */ jsx$1("footer", { css: footerLayout, children });
 }
 const PAGEABLE_DEFAULT = {
   page: 0,
@@ -11248,6 +11161,40 @@ function useFetchCartItems() {
   }, [getCartItemData]);
   return { cartItems, error, isLoading, isFetching, getCartItemData, setError };
 }
+const Context = reactExports.createContext({
+  cartItems: [],
+  error: "",
+  isLoading: false,
+  isFetching: false,
+  getCartItemData: () => {
+  },
+  setError: () => {
+  }
+});
+function CartItemsProvider({ children }) {
+  const { cartItems, error, isLoading, isFetching, getCartItemData, setError } = useFetchCartItems();
+  return /* @__PURE__ */ jsx$1(
+    Context.Provider,
+    {
+      value: {
+        cartItems,
+        error,
+        isLoading,
+        isFetching,
+        getCartItemData,
+        setError
+      },
+      children
+    }
+  );
+}
+function useCartItemsContext() {
+  const context = reactExports.useContext(Context);
+  if (context === void 0) {
+    throw new Error("useAPIContext must be used within a Provider");
+  }
+  return context;
+}
 const getCartItemSummary = (cartItems, selectedCartIds) => {
   const filteredCartItems = cartItems.filter(
     (e2) => selectedCartIds.includes(e2.id.toString())
@@ -11259,6 +11206,723 @@ const getCartItemSummary = (cartItems, selectedCartIds) => {
   const totalQuantity = filteredCartItems.reduce((a, b2) => a + b2.quantity, 0);
   return { totalPrice, totalQuantity };
 };
+const modalLayout = css`
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+`;
+function Modal({ children, open }) {
+  reactExports.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+  return /* @__PURE__ */ jsx$1(Fragment, { children: open ? /* @__PURE__ */ jsx$1("div", { css: modalLayout, children }) : null });
+}
+const contentLayout = css`
+  z-index: 10;
+  background-color: white;
+  width: 382px;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  border-radius: 8px;
+`;
+function ModalContent({
+  children,
+  customCss
+}) {
+  return /* @__PURE__ */ jsx$1("div", { css: [contentLayout, customCss], children });
+}
+const overlayLayout = css`
+  background-color: rgba(0, 0, 0, 0.35);
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  inset: 0;
+`;
+function ModalOverlay({ setOpen, customCss }) {
+  const handleClick = () => {
+    setOpen(false);
+  };
+  return /* @__PURE__ */ jsx$1("div", { onClick: handleClick, css: [overlayLayout, customCss] });
+}
+const title = css`
+  font-weight: 700;
+  font-size: 18px;
+`;
+const imgLayout = css`
+  width: 16px;
+  height: 16px;
+`;
+const deliveryInfo = css`
+  font-weight: 500;
+  font-size: 12px;
+`;
+const deliveryInfoBox = css`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 32px;
+`;
+const couponList = css`
+  margin-top: 16px;
+`;
+const headLayout = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+const closeButton = css`
+  border: none;
+  background-color: transparent;
+  padding: 0px;
+  cursor: pointer;
+`;
+const closeImgLayout = css`
+  width: 14px;
+  height: 14px;
+`;
+const listLayout = (disabled) => {
+  return css`
+    padding: 0px;
+    list-style-type: none;
+    padding-bottom: 24px;
+
+    ${disabled && css`
+      background: #fefefe;
+      opacity: 0.2;
+      pointer-events: none; // 클릭 등 모든 사용자 상호작용 차단
+      user-select: none; // 텍스트 드래그도 막음
+    `}
+  `;
+};
+const checkBoxWrapper = css`
+  display: flex;
+  align-items: center;
+  gap: 4.5px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+`;
+const labelText = css`
+  font-weight: 500;
+  font-size: 16px;
+  font-weight: 700;
+`;
+const descriptionTextBox = css`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+const descriptionText = css`
+  font-weight: 500;
+  font-size: 12px;
+`;
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  if (!year || !month || !day) return "";
+  return `${year}년 ${month}월 ${day}일`;
+}
+function getKoreanAmPm(timeString) {
+  const [hourStr] = timeString.split(":");
+  const hour = parseInt(hourStr, 10);
+  if (Number.isNaN(hour) || hour < 0 || hour > 23) {
+    throw new RangeError("시간의 시(hour) 부분이 00~23 범위를 벗어났습니다.");
+  }
+  return hour < 12 ? "오전" : "오후";
+}
+const getAvailableTimeText = (availableTime) => {
+  const { start, end } = availableTime;
+  const [startH, startM] = start.split(":");
+  const [endH, endM] = end.split(":");
+  const startText = `${Number(startH)}시${startM === "00" ? "" : `${startM}분`}`;
+  const endText = `${Number(endH)}시${endM === "00" ? "" : `${endM}분`}`;
+  const startTimeZone = getKoreanAmPm(start);
+  const endTimeZone = getKoreanAmPm(end) === startTimeZone ? "" : getKoreanAmPm(end);
+  return `${startTimeZone} ${startText}부터 ${endTimeZone} ${endText}까지`;
+};
+function CouponItem({
+  couponData,
+  isChecked,
+  onChange,
+  disabled
+}) {
+  return /* @__PURE__ */ jsxs("li", { css: listLayout(disabled), children: [
+    /* @__PURE__ */ jsx$1(Line, {}),
+    /* @__PURE__ */ jsxs("div", { css: checkBoxWrapper, children: [
+      /* @__PURE__ */ jsx$1(
+        CheckBox,
+        {
+          customCss: css`
+            width: 24px;
+            height: 24px;
+            margin: 0px;
+          `,
+          id: couponData.id.toString(),
+          isChecked,
+          onChange,
+          dataTestId: couponData.code
+        }
+      ),
+      /* @__PURE__ */ jsx$1("label", { htmlFor: couponData.id.toString(), css: labelText, children: couponData.description })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { css: descriptionTextBox, children: [
+      /* @__PURE__ */ jsxs("p", { css: descriptionText, children: [
+        "만료일: ",
+        formatDate(couponData.expirationDate)
+      ] }),
+      couponData.minimumAmount ? /* @__PURE__ */ jsxs("p", { css: descriptionText, children: [
+        "최소 주문 금액: ",
+        couponData.minimumAmount.toLocaleString("ko"),
+        "원"
+      ] }) : null,
+      couponData.availableTime ? /* @__PURE__ */ jsxs("p", { css: descriptionText, children: [
+        "사용 가능 시간: ",
+        getAvailableTimeText(couponData.availableTime)
+      ] }) : null
+    ] })
+  ] });
+}
+function CouponModalContent({
+  handleUseClick,
+  handleClose,
+  handleCouponIdsChange,
+  coupons,
+  selectedCouponIds,
+  couponPrice,
+  couponWithDisabled
+}) {
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("div", { css: headLayout, children: [
+      /* @__PURE__ */ jsx$1("p", { css: title, children: "쿠폰을 선택해 주세요" }),
+      /* @__PURE__ */ jsx$1("button", { onClick: handleClose, css: closeButton, children: /* @__PURE__ */ jsx$1("img", { css: closeImgLayout, src: "./close.png" }) })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { css: deliveryInfoBox, children: [
+      /* @__PURE__ */ jsx$1("img", { src: "./info.png", css: imgLayout }),
+      /* @__PURE__ */ jsx$1("p", { css: deliveryInfo, children: "쿠폰은 최대 2개까지 사용할 수 있습니다." })
+    ] }),
+    /* @__PURE__ */ jsx$1("div", { css: couponList, children: coupons.map((coupon, index) => /* @__PURE__ */ jsx$1(
+      CouponItem,
+      {
+        disabled: couponWithDisabled[index],
+        couponData: coupon,
+        onChange: handleCouponIdsChange,
+        isChecked: selectedCouponIds.includes(coupon.id.toString())
+      },
+      coupon.id
+    )) }),
+    /* @__PURE__ */ jsxs(
+      Button,
+      {
+        onClick: handleUseClick,
+        size: "full",
+        customCss: css`
+          background-color: #333333;
+          font-size: 15px;
+        `,
+        children: [
+          "총 ",
+          couponPrice.toLocaleString("ko"),
+          "원 할인 쿠폰 사용하기"
+        ]
+      }
+    )
+  ] });
+}
+async function getCoupons() {
+  const baseUrl = "http://techcourse-lv2-alb-974870821.ap-northeast-2.elb.amazonaws.com";
+  const response = await fetch(`${baseUrl}/coupons`, {
+    method: "GET"
+  });
+  if (!response.ok) {
+    throw new Error("에러 발생");
+  }
+  const data = await response.json();
+  return data;
+}
+function useFetchCoupons() {
+  const [coupons, setCoupons] = reactExports.useState([]);
+  const [error, setError] = reactExports.useState("");
+  const [isLoading, setIsLoading] = reactExports.useState(false);
+  const [isFetching, setIsFetching] = reactExports.useState(false);
+  const getCouponsData = reactExports.useCallback(async () => {
+    try {
+      setIsFetching(true);
+      const response = await getCoupons();
+      setCoupons(response);
+    } catch (e2) {
+      setError("데이터를 가져오는데 실패했습니다");
+    } finally {
+      setIsFetching(false);
+    }
+  }, []);
+  reactExports.useEffect(() => {
+    const fetchOnce = async () => {
+      setIsLoading(true);
+      await getCouponsData();
+      setIsLoading(false);
+    };
+    fetchOnce();
+  }, [getCouponsData]);
+  return { coupons, error, isLoading, isFetching, setError };
+}
+const calculateCouponPrice = ({
+  couponIds,
+  coupons,
+  selectedCartItems,
+  deliveryFee,
+  nowDate
+}) => {
+  const totalPrice = selectedCartItems.reduce(
+    (a, b2) => a + b2.product.price * b2.quantity,
+    0
+  );
+  let sum = 0;
+  let discountedPrice = totalPrice;
+  couponIds.forEach((id2) => {
+    const coupon = coupons.find((e2) => e2.id === Number(id2));
+    if (!coupon) return;
+    if (getIsExpired(coupon.expirationDate, nowDate)) return;
+    if (coupon.availableTime && !isWithinAvailableTime(coupon.availableTime, nowDate))
+      return;
+    switch (coupon.id) {
+      case 1:
+        if (coupon.minimumAmount && coupon.discount && totalPrice >= coupon.minimumAmount) {
+          sum += coupon.discount;
+          discountedPrice -= coupon.discount;
+        }
+        break;
+      case 2: {
+        const { buyQuantity, getQuantity } = coupon;
+        if (!buyQuantity || !getQuantity) return;
+        const over = selectedCartItems.filter(
+          (item) => item.quantity >= buyQuantity + getQuantity
+        );
+        if (over.length > 0) {
+          const prices = over.map(
+            (e2) => Math.floor(e2.quantity / (buyQuantity + getQuantity)) * e2.product.price * getQuantity
+          );
+          const maxPrice = Math.max(...prices);
+          sum += maxPrice;
+          discountedPrice -= maxPrice;
+        }
+        break;
+      }
+      case 3:
+        if (coupon.minimumAmount && totalPrice >= coupon.minimumAmount) {
+          sum += deliveryFee;
+          discountedPrice -= deliveryFee;
+        }
+        break;
+      case 4:
+        if (coupon.discount) {
+          sum += discountedPrice * coupon.discount / 100;
+          discountedPrice -= discountedPrice * coupon.discount / 100;
+        }
+        break;
+    }
+  });
+  return sum;
+};
+const getIsExpired = (expirationDateString, nowDate = /* @__PURE__ */ new Date()) => {
+  const expirationDate = new Date(expirationDateString);
+  return expirationDate < nowDate;
+};
+const isWithinAvailableTime = (availableTime, nowDate) => {
+  const { start, end } = availableTime;
+  const [startH, startM, startS] = start.split(":").map(Number);
+  const [endH, endM, endS] = end.split(":").map(Number);
+  const year = nowDate.getFullYear();
+  const month = nowDate.getMonth();
+  const date = nowDate.getDate();
+  const startTime = new Date(year, month, date, startH, startM, startS);
+  const endTime = new Date(year, month, date, endH, endM, endS);
+  return nowDate >= startTime && nowDate <= endTime;
+};
+const getDeliveryFee = (isChecked, totalPrice) => {
+  if (1e5 > totalPrice) {
+    return isChecked ? 6e3 : 3e3;
+  } else {
+    return isChecked ? 3e3 : 0;
+  }
+};
+function useCouponSelection({
+  maxCoupons,
+  onExceed,
+  calculatePrice
+}) {
+  const [selectedCouponIds, setSelectedCouponIds] = reactExports.useState([]);
+  const toggleCouponId = (id2) => {
+    let order;
+    if (selectedCouponIds.includes(id2)) {
+      order = selectedCouponIds.filter((e2) => e2 !== id2);
+    } else {
+      if (selectedCouponIds.length >= maxCoupons) {
+        onExceed == null ? void 0 : onExceed();
+        return;
+      }
+      order = [...selectedCouponIds, id2];
+    }
+    const forwardPrice = calculatePrice(order);
+    const reversed = [...order].reverse();
+    const reversePrice = calculatePrice(reversed);
+    setSelectedCouponIds(forwardPrice <= reversePrice ? reversed : order);
+  };
+  return { selectedCouponIds, toggleCouponId };
+}
+const isCouponDisabled = (coupon, cartItems, deliveryFee) => calculateCouponPrice({
+  couponIds: [coupon.id.toString()],
+  coupons: [coupon],
+  selectedCartItems: cartItems,
+  deliveryFee,
+  nowDate: /* @__PURE__ */ new Date()
+}) === 0;
+const MAX_SELECTED_COUPON_COUNT = 2;
+function OrderConfirm() {
+  const { cartItems } = useCartItemsContext();
+  const { coupons } = useFetchCoupons();
+  const [isChecked, setIsChecked] = reactExports.useState(false);
+  const [open, setOpen] = reactExports.useState(false);
+  const [finalSelectedCouponIds, setFinalSelectedCouponIds] = reactExports.useState([]);
+  const navigate = useNavigate();
+  const selectedCartItemIds = getItem(SELECTED_CART_ITEM_IDS, []);
+  const selectedCartItems = cartItems.filter(
+    (cartItem) => selectedCartItemIds.includes(cartItem.id.toString())
+  );
+  const handleExceed = () => {
+    alert("쿠폰은 2개까지만 선택 가능합니다.");
+  };
+  const { selectedCouponIds, toggleCouponId } = useCouponSelection({
+    maxCoupons: MAX_SELECTED_COUPON_COUNT,
+    onExceed: handleExceed,
+    calculatePrice: (couponIds) => calculateCouponPrice({
+      couponIds,
+      coupons,
+      selectedCartItems,
+      deliveryFee,
+      nowDate: /* @__PURE__ */ new Date()
+    })
+  });
+  const handleCheckBoxChange = () => {
+    setIsChecked((prev2) => !prev2);
+  };
+  const handleBackClick = () => {
+    navigate(-1);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleUseClick = () => {
+    setOpen(false);
+    setFinalSelectedCouponIds(selectedCouponIds);
+  };
+  const { totalPrice } = getCartItemSummary(
+    cartItems,
+    selectedCartItemIds.map(String)
+  );
+  const deliveryFee = getDeliveryFee(isChecked, totalPrice);
+  const deliveryFreeCoupon = finalSelectedCouponIds.find((e2) => e2 === "3") ? deliveryFee : 0;
+  const couponDiscountAmount = calculateCouponPrice({
+    couponIds: finalSelectedCouponIds,
+    coupons,
+    selectedCartItems,
+    deliveryFee: getDeliveryFee(isChecked, totalPrice),
+    nowDate: /* @__PURE__ */ new Date()
+  });
+  const couponPrice = calculateCouponPrice({
+    couponIds: selectedCouponIds,
+    coupons,
+    selectedCartItems,
+    deliveryFee,
+    nowDate: /* @__PURE__ */ new Date()
+  });
+  const couponWithDisabled = coupons.map(
+    (coupon) => isCouponDisabled(coupon, selectedCartItems, deliveryFee)
+  );
+  const handlePaymentClick = () => {
+    navigate("/payment-confirm", {
+      state: {
+        selectedItemGroupCount: selectedCartItemIds.length,
+        selectedCartItem: selectedCartItems.reduce((a, b2) => a + b2.quantity, 0),
+        totalPrice: totalPrice - couponDiscountAmount + deliveryFee
+      }
+    });
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs(PageLayout, { children: [
+      /* @__PURE__ */ jsx$1(Header, { children: /* @__PURE__ */ jsx$1("button", { css: backButton, onClick: handleBackClick, children: /* @__PURE__ */ jsx$1("img", { css: backImg, src: "./back.png" }) }) }),
+      /* @__PURE__ */ jsxs(Main, { children: [
+        /* @__PURE__ */ jsxs("div", { css: titleBox$1, children: [
+          /* @__PURE__ */ jsx$1("p", { css: titleStyle$1, children: "주문 확인" }),
+          /* @__PURE__ */ jsxs("div", { css: subTitleBox, children: [
+            /* @__PURE__ */ jsxs("p", { css: subTitleStyle$1, children: [
+              "현재 ",
+              selectedCartItemIds.length,
+              "종류의 상품",
+              " ",
+              selectedCartItems.reduce((a, b2) => a + b2.quantity, 0),
+              "개를 주문합니다."
+            ] }),
+            /* @__PURE__ */ jsx$1("p", { css: subTitleStyle$1, children: "최종 결제 금액을 확인해 주세요." })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx$1(SelectedCartProductContainer, { cartItems: selectedCartItems }),
+        /* @__PURE__ */ jsx$1("button", { css: applyButton, onClick: () => setOpen(true), children: "쿠폰 적용" }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx$1("p", { css: deliveryText, children: "배송 정보" }),
+          /* @__PURE__ */ jsxs("div", { css: checkBoxWrapper$1, children: [
+            /* @__PURE__ */ jsx$1(
+              CheckBox,
+              {
+                id: "mountainousArea",
+                isChecked,
+                onChange: handleCheckBoxChange,
+                dataTestId: "mountainousArea"
+              }
+            ),
+            /* @__PURE__ */ jsx$1("label", { htmlFor: "mountainousArea", css: labelText$1, children: "제주도 및 도서 산간 지역" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx$1(
+          PaymentSummary,
+          {
+            price: totalPrice,
+            couponDiscountAmount: couponDiscountAmount - deliveryFreeCoupon,
+            deliveryFee: deliveryFee - deliveryFreeCoupon
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx$1(Footer, { children: /* @__PURE__ */ jsx$1(
+        Button,
+        {
+          onClick: handlePaymentClick,
+          type: "submit",
+          size: "full",
+          style: "primary",
+          children: "결제하기"
+        }
+      ) })
+    ] }),
+    /* @__PURE__ */ jsxs(Modal, { open, children: [
+      /* @__PURE__ */ jsx$1(ModalOverlay, { setOpen }),
+      /* @__PURE__ */ jsx$1(ModalContent, { children: /* @__PURE__ */ jsx$1(
+        CouponModalContent,
+        {
+          handleClose,
+          handleUseClick,
+          handleCouponIdsChange: toggleCouponId,
+          coupons,
+          selectedCouponIds,
+          couponPrice,
+          couponWithDisabled
+        }
+      ) })
+    ] })
+  ] });
+}
+async function deleteShoppingCart(productId) {
+  const token2 = "a2lteW91MTEwMjpwYXNzd29yZA==";
+  const baseUrl = "http://techcourse-lv2-alb-974870821.ap-northeast-2.elb.amazonaws.com";
+  const response = await fetch(`${baseUrl}/cart-items/${productId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Basic ${token2}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error("에러 발생");
+  }
+}
+const CartProductContainerLayout = css`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+`;
+const CartProductList = css`
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  overflow: auto;
+  gap: 24px;
+`;
+const SelectAllLayout = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+const CartItemBox = css`
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+`;
+const CartItemHeader = css`
+  display: flex;
+  justify-content: space-between;
+`;
+css`
+  display: flex;
+  justify-content: space-between;
+`;
+css`
+  font-weight: 700;
+  font-size: 16px;
+`;
+css`
+  font-weight: 700;
+  font-size: 24px;
+`;
+function CartProductContainer({
+  cartItems,
+  onChange,
+  onError,
+  selectedCartIds,
+  setSelectedCartIds,
+  isFetching
+}) {
+  const handleAllCheckBox = () => {
+    if (selectedCartIds.length === cartItems.length) {
+      setSelectedCartIds([]);
+      setItem(SELECTED_CART_ITEM_IDS, []);
+    } else {
+      const ids = cartItems.map((item) => item.id.toString());
+      setSelectedCartIds(ids);
+      setItem(SELECTED_CART_ITEM_IDS, ids);
+    }
+  };
+  const handleCheckBox = (id2) => {
+    if (selectedCartIds.includes(id2)) {
+      const ids = selectedCartIds.filter((itemId) => itemId !== id2);
+      setSelectedCartIds(ids);
+      setItem(SELECTED_CART_ITEM_IDS, ids);
+    } else {
+      const ids = [...selectedCartIds, id2];
+      setSelectedCartIds(ids);
+      setItem(SELECTED_CART_ITEM_IDS, ids);
+    }
+  };
+  const handleDelete = async (id2) => {
+    try {
+      await deleteShoppingCart(id2);
+      const ids = selectedCartIds.filter((itemId) => itemId !== id2.toString());
+      setSelectedCartIds(ids);
+      setItem(SELECTED_CART_ITEM_IDS, ids);
+      onChange();
+    } catch (error) {
+      onError("삭제에 실패했습니다");
+    }
+  };
+  return /* @__PURE__ */ jsx$1(Fragment, { children: /* @__PURE__ */ jsxs("div", { css: CartProductContainerLayout, children: [
+    /* @__PURE__ */ jsxs("div", { css: SelectAllLayout, children: [
+      /* @__PURE__ */ jsx$1(
+        CheckBox,
+        {
+          isChecked: selectedCartIds.length === cartItems.length && cartItems.length !== 0,
+          dataTestId: "select-all",
+          id: "select-all",
+          onChange: handleAllCheckBox
+        }
+      ),
+      /* @__PURE__ */ jsx$1("label", { htmlFor: "select-all", children: "전체 선택" })
+    ] }),
+    /* @__PURE__ */ jsx$1("section", { css: CartProductList, children: cartItems.map((item) => {
+      return /* @__PURE__ */ jsxs("div", { css: CartItemBox, children: [
+        /* @__PURE__ */ jsx$1(Line, {}),
+        /* @__PURE__ */ jsxs("div", { css: CartItemHeader, children: [
+          /* @__PURE__ */ jsx$1(
+            CheckBox,
+            {
+              dataTestId: `select-${item.id}`,
+              isChecked: selectedCartIds.includes(item.id.toString()),
+              onChange: handleCheckBox,
+              id: item.id.toString()
+            }
+          ),
+          /* @__PURE__ */ jsx$1(Button, { onClick: () => handleDelete(item.id), style: "ghost", children: "삭제" })
+        ] }),
+        /* @__PURE__ */ jsx$1(
+          CartProduct,
+          {
+            id: item.id,
+            imageUrl: item.product.imageUrl,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            onChange,
+            isFetching,
+            mode: "control"
+          }
+        )
+      ] }, item.id);
+    }) })
+  ] }) });
+}
+const emptyText = css`
+  font-weight: 400;
+  font-size: 16px;
+`;
+const emptyLayout = css`
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+`;
+function EmptyShoppingCart() {
+  return /* @__PURE__ */ jsx$1("div", { css: emptyLayout, children: /* @__PURE__ */ jsx$1("p", { css: emptyText, children: "장바구니에 담은 상품이 없습니다." }) });
+}
+const ToastLayout = css`
+  position: absolute;
+  bottom: -36px;
+  left: 0;
+  padding: 12px 77px;
+  width: 100%;
+  background-color: #ffc9c9;
+  font-weight: 500;
+  font-size: 12px;
+  text-align: center;
+  color: black;
+  box-sizing: border-box;
+`;
+function Toast({ children }) {
+  const [visible, setVisible] = reactExports.useState(true);
+  reactExports.useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 1e3);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!visible) return null;
+  return /* @__PURE__ */ jsx$1("div", { css: ToastLayout, children });
+}
+const titleStyle = css`
+  font-weight: 700;
+  font-size: 24px;
+`;
+const subTitleStyle = css`
+  font-weight: 500;
+  font-size: 12px;
+`;
+const titleBox = css`
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+`;
+const spinnerWrapper = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+`;
 const rotate = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -11284,7 +11948,7 @@ function Spinner({ size = 24, color = "black" }) {
 }
 function ShoppingCart() {
   const navigate = useNavigate();
-  const { cartItems, error, isLoading, isFetching, getCartItemData, setError } = useFetchCartItems();
+  const { cartItems, error, isLoading, isFetching, getCartItemData, setError } = useCartItemsContext();
   const [selectedCartIds, setSelectedCartIds] = reactExports.useState([]);
   const { totalPrice, totalQuantity } = getCartItemSummary(
     cartItems,
@@ -11302,6 +11966,12 @@ function ShoppingCart() {
   const handleError = (errorMessage) => {
     setError(errorMessage);
   };
+  reactExports.useEffect(() => {
+    setItem(
+      SELECTED_CART_ITEM_IDS,
+      cartItems.map((e2) => e2.id.toString())
+    );
+  }, [cartItems]);
   reactExports.useEffect(() => {
     if (!isLoading && cartItems.length > 0) {
       setSelectedCartIds(cartItems.map((item) => item.id.toString()));
@@ -11334,7 +12004,13 @@ function ShoppingCart() {
             isFetching
           }
         ),
-        /* @__PURE__ */ jsx$1(PaymentSummary, { price: totalPrice })
+        /* @__PURE__ */ jsx$1(
+          PaymentSummary,
+          {
+            price: totalPrice,
+            deliveryFee: 1e5 <= totalPrice ? 0 : 3e3
+          }
+        )
       ] })
     ] }) }),
     /* @__PURE__ */ jsx$1(Footer, { children: /* @__PURE__ */ jsx$1(
@@ -11350,12 +12026,107 @@ function ShoppingCart() {
     ) })
   ] });
 }
+const confirmLayout = css`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+`;
+const totalPriceBox = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+const titleText = css`
+  font-weight: 700;
+  font-size: 24px;
+`;
+const subtitleText = css`
+  font-weight: 700;
+  font-size: 16px;
+`;
+const bodyTextBox = css`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+`;
+const bodyText = css`
+  font-weight: 500;
+  font-size: 12px;
+`;
+css`
+  border: none;
+  padding: 0px;
+  background-color: transparent;
+  cursor: pointer;
+`;
+css`
+  width: 21px;
+  height: 21px;
+`;
+function Confirm() {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const handleBackClick = () => {
+    navigate("/");
+  };
+  return /* @__PURE__ */ jsxs(PageLayout, { children: [
+    /* @__PURE__ */ jsx$1(Header, {}),
+    /* @__PURE__ */ jsx$1(Main, { children: /* @__PURE__ */ jsx$1("div", { css: confirmLayout, children: state ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx$1("p", { css: titleText, children: "결제 확인" }),
+      /* @__PURE__ */ jsxs("div", { css: bodyTextBox, children: [
+        /* @__PURE__ */ jsxs("p", { css: bodyText, children: [
+          "총 ",
+          state.selectedItemGroupCount,
+          "종류의 상품",
+          " ",
+          state.selectedCartItem,
+          "개를 주문합니다."
+        ] }),
+        /* @__PURE__ */ jsx$1("p", { css: bodyText, children: "최종 결제 금액을 확인해 주세요." })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { css: totalPriceBox, children: [
+        /* @__PURE__ */ jsx$1("p", { css: subtitleText, children: "총 결제금액" }),
+        /* @__PURE__ */ jsxs("p", { css: titleText, children: [
+          Number(state.totalPrice).toLocaleString("ko"),
+          "원"
+        ] })
+      ] })
+    ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx$1("p", { children: "잘못된 접근입니다." }),
+      /* @__PURE__ */ jsx$1(
+        Button,
+        {
+          onClick: handleBackClick,
+          customCss: css`
+                  padding: 10px;
+                `,
+          children: "장바구니 페이지로 돌아가기"
+        }
+      )
+    ] }) }) }),
+    /* @__PURE__ */ jsx$1(Footer, { children: /* @__PURE__ */ jsx$1(
+      Button,
+      {
+        onClick: handleBackClick,
+        type: "submit",
+        size: "full",
+        style: "primary",
+        children: "장바구니로 돌아가기"
+      }
+    ) })
+  ] });
+}
 function App() {
   return /* @__PURE__ */ jsx$1(BrowserRouter, { basename: "/react-shopping-cart", children: /* @__PURE__ */ jsxs(Routes, { children: [
     /* @__PURE__ */ jsx$1(Route, { path: "/", element: /* @__PURE__ */ jsx$1(ShoppingCart, {}) }),
-    /* @__PURE__ */ jsx$1(Route, { path: "/confirm", element: /* @__PURE__ */ jsx$1(OrderConfirm, {}) })
+    /* @__PURE__ */ jsx$1(Route, { path: "/confirm", element: /* @__PURE__ */ jsx$1(OrderConfirm, {}) }),
+    /* @__PURE__ */ jsx$1(Route, { path: "/payment-confirm", element: /* @__PURE__ */ jsx$1(Confirm, {}) })
   ] }) });
 }
 client.createRoot(document.getElementById("root")).render(
-  /* @__PURE__ */ jsx$1(React.StrictMode, { children: /* @__PURE__ */ jsx$1(App, {}) })
+  /* @__PURE__ */ jsx$1(CartItemsProvider, { children: /* @__PURE__ */ jsx$1(React.StrictMode, { children: /* @__PURE__ */ jsx$1(App, {}) }) })
 );
